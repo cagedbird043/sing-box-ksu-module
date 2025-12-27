@@ -1,0 +1,45 @@
+#!/system/bin/sh
+
+# Mice System Tools - Sing-box Controller
+WORKSPACE="/data/adb/sing-box-workspace"
+BIN="$WORKSPACE/bin/sing-box"
+SERVICE_SH="/data/adb/modules/sing-box-ksu-module/service.sh"
+LOG_FILE="$WORKSPACE/var/log/sing-box.log"
+
+case "$1" in
+    start)
+        if pgrep -f "$BIN" > /dev/null; then
+            echo "Sing-box 已经在运行中。"
+        else
+            echo "正在启动 Sing-box (守护模式)..."
+            # 必须使用 nohup 或重定向，确保 Shell 退出后循环不被挂起
+            sh "$SERVICE_SH" > /dev/null 2>&1 &
+            echo "启动指令已发送，请通过 sbc status 观察。"
+        fi
+        ;;
+    stop)
+        echo "正在停止 Sing-box..."
+        pkill -f "$BIN"
+        echo "已停止。"
+        ;;
+    restart)
+        $0 stop
+        sleep 1
+        $0 start
+        ;;
+    status)
+        if pgrep -f "$BIN" > /dev/null; then
+            PID=$(pgrep -f "$BIN")
+            echo "状态: 正在运行 (PID: $PID)"
+            echo "工作空间: $WORKSPACE"
+            echo "日志最后 5 行:"
+            tail -n 5 "$LOG_FILE"
+        else
+            echo "状态: 已停止"
+        fi
+        ;;
+    *)
+        echo "用法: sbc {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
