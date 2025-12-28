@@ -47,5 +47,10 @@ ui_print "- 正在重新拉起守护进程..."
 nohup sh $MODPATH/service.sh >/dev/null 2>&1 &
 
 ui_print "--------------------------------------"
-ui_print " ✅ 热更新成功！请重启以应用全局软链。"
-ui_print "--------------------------------------"
+
+# 智能显示逻辑
+if [ -L "/system/bin/sbc" ]; then
+    ui_print "✅ 热更新成功！服务已即时重载，请尽情冲浪。"
+else
+    ui_print "✅ 物理部署完成！由于软链首次注册，请重启手机以激活 sbc 命令。"
+fi
