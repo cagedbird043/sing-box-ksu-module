@@ -32,16 +32,29 @@ jobs:
             jq -r '.assets[] | select(.name | contains("android-arm64")) | .browser_download_url')
 
           curl -L -o sing-box-android.tar.gz "$DOWNLOAD_URL"
-          tar -xzf sing-box-android.tar.gz -C bin/
 
-          # 如果解压出来不叫 sing-box，才执行改名
-          if [ ! -f "bin/sing-box" ]; then
-              mv bin/sing-box* bin/sing-box
+          # [关键修改] 不要解压覆盖整个 bin，而是只提取 sing-box
+          # tar -xzf ... -C bin/ 会把 bin 里的 sbc/envsubst 覆盖掉（如果 tar 包里也有同名目录）
+          # 虽然你的 tar 包里只有 sing-box，但最稳妥的是解压到临时目录再 mv
+          mkdir -p temp_bin
+          tar -xzf sing-box-android.tar.gz -C temp_bin/
+
+          # 移动并处理同名冲突 (Mice 专属逻辑)
+          if [ -f "temp_bin/bin/sing-box" ]; then
+              mv temp_bin/bin/sing-box bin/sing-box
+          elif [ -f "temp_bin/sing-box" ]; then
+              mv temp_bin/sing-box bin/sing-box
+          else
+              # 兜底：处理可能的带版本号文件名
+              mv temp_bin/sing-box* bin/sing-box
           fi
+          rm -rf temp_bin sing-box-android.tar.gz
           chmod +x bin/sing-box
 
           # 2. 抓取模板
-          curl -fL -o etc/config.template.json https://raw.githubusercontent.com/cagedbird043/sing-box-config-templates/mobile/config.template.json
+          # config.template.json 现在物理位置在根目录
+          curl -fL -o config.template.json https://raw.githubusercontent.com/cagedbird043/sing-box-config-templates/mobile/config.template.json
+          # .env.example 也在根目录
           curl -fL -o .env.example https://raw.githubusercontent.com/cagedbird043/sing-box-config-templates/main/.env.example
 
       - name: Prepare Module Versioning
@@ -61,10 +74,12 @@ jobs:
           # 4. 提取当前版本的 Changelog 用于 GitHub Release 页面
           VERSION_ESCAPED=$(echo "$DISPLAY_VER" | sed 's/\./\\./g')
           sed -n "/## $VERSION_ESCAPED/,/## /p" CHANGELOG.md | sed '$d' > release_body.txt
-      - name: Create Package
+      - name: Create Module Package
         run: |
-          # update.json 不打包，只在 Repo 层面维护
-          zip -r sing-box-ksu-module.zip bin etc system customize.sh service.sh module.prop LICENSE CHANGELOG.md README.md .env.example
+          # 使用 -ry 参数：r 是递归，y 是保持符号链接 (Store symbolic links as such)
+          ZIP_NAME="sing-box-ksu-module.zip"
+          zip -ry $ZIP_NAME bin etc system customize.sh service.sh module.prop update.json LICENSE CHANGELOG.md README.md .env.example config.template.json
+          echo "ZIP_PATH=$ZIP_NAME" >> $GITHUB_ENV
 
       - name: Release Module
         uses: softprops/action-gh-release@v2

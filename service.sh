@@ -4,7 +4,7 @@
 WORKSPACE="/data/adb/sing-box-workspace"
 BIN="$WORKSPACE/bin/sing-box"
 CONFFILE="$WORKSPACE/etc/config.json"
-TEMPLATE="$WORKSPACE/etc/config.template.json"
+TEMPLATE="$WORKSPACE/config.template.json"
 LOG_FILE="$WORKSPACE/var/log/sing-box.log"
 
 # 检查是否已在运行，防止重复启动

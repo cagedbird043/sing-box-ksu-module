@@ -1,0 +1,30 @@
+#!/system/bin/awk -f
+
+# 定制版 envsubst - 基于 AWK 的轻量级环境变量替换工具
+# 优化自 Busybox 2025 提议补丁
+
+BEGIN {
+    if (ARGV[1] == "-h" || ARGV[1] == "--help" || ARGV[1] == "-v") {
+        print "Mice-System-Tools: envsubst (AWK implementation)"
+        print "Usage: envsubst < [INPUT] > [OUTPUT]"
+        exit 0
+    }
+}
+{
+    # 匹配 $VAR 或 ${VAR}
+    while (match($0, /\$[A-Za-z_][A-Za-z0-9_]*|\${[A-Za-z_][A-Za-z0-9_]*}/)) {
+        start = RSTART
+        len = RLENGTH
+        var = substr($0, start + 1, len - 1)
+        
+        # 去掉花括号
+        gsub(/[{}]/, "", var)
+        
+        # 从系统的 ENVIRON 数组获取值
+        value = ENVIRON[var]
+        
+        # 拼接字符串并继续匹配下一处
+        $0 = substr($0, 1, start - 1) value substr($0, start + len)
+    }
+    print
+}
