@@ -74,6 +74,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.DISPLAY_VER }}
+          name: Sing-box for KSU [${{ env.DISPLAY_VER }}]
           body_path: release_body.txt
           files: sing-box-ksu-module.zip
           token: ${{ secrets.GITHUB_TOKEN }}
