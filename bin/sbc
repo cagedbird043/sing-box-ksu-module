@@ -8,7 +8,6 @@ TEMPLATE="$WORKSPACE/config.template.json"
 CONFFILE="$WORKSPACE/etc/config.json"
 SERVICE_PATH="/data/adb/modules/sing-box-ksu-module/service.sh"
 LOG_FILE="$WORKSPACE/var/log/sing-box.log"
-# 指挥线：锁定 EdgeOne CDN 上的 mobile 专项分支
 TEMPLATE_URL="https://miceworld.top/sing-box-config-templates/mobile/config.template.json"
 
 case "$1" in

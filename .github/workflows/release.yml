@@ -3,23 +3,44 @@ on:
   workflow_dispatch:
   push:
     branches: ["main"]
-    paths: ["bin/**", "service.sh", "customize.sh", "module.prop"]
+    paths:
+      ["bin/**", "service.sh", "customize.sh", "module.prop", "release.yml"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions: contents: write
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Fetch Latest Core
         run: |
+          # 1. 抓取版本号
           SB_VER=$(curl -s https://api.github.com/repos/cagedbird043/sing-box-auto-build-ci/releases | jq -r 'map(select(.tag_name | contains("alpha") | not)) | .[0].tag_name')
+
+          # 2. 获取 android-arm64 下载地址
           DOWNLOAD_URL=$(curl -s https://api.github.com/repos/cagedbird043/sing-box-auto-build-ci/releases/tags/$SB_VER | jq -r '.assets[] | select(.name | contains("android-arm64")) | .browser_download_url')
+
+          echo "Downloading from: $DOWNLOAD_URL"
           curl -L -o sb.tar.gz "$DOWNLOAD_URL"
-          tar -xzf sb.tar.gz -C bin/ --strip-components=1 sing-box || tar -xzf sb.tar.gz -C bin/ sing-box
+
+          # 3. 鲁棒解压逻辑：原地解压，然后全量搜索
+          mkdir -p temp_sb
+          tar -xzf sb.tar.gz -C temp_sb
+
+          # 寻找名为 sing-box 的文件并移动到目标位置
+          # 这里的 find 会无视它是直接在根目录还是在 bin 子目录
+          find temp_sb -type f -name "sing-box" -exec mv {} bin/sing-box \;
+
+          # 兜底：如果文件名带后缀（如 sing-box-android-arm64），也给它重命名过来
+          if [ ! -f bin/sing-box ]; then
+            find temp_sb -type f -name "sing-box*" ! -name "*.tar.gz" -exec mv {} bin/sing-box \;
+          fi
+
           chmod +x bin/sing-box
+          rm -rf temp_sb sb.tar.gz
 
       - name: Prepare Module Metadata
         run: |
