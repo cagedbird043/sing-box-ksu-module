@@ -9,7 +9,7 @@ on:
         "service.sh",
         "customize.sh",
         "module.prop",
-        "release.yml",
+        ".github/workflows/release.yml",
         "CHANGELOG.md",
       ]
 
@@ -23,30 +23,54 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Fetch Latest Core
+        env:
+          # 显式引用 Token，确保有权限调用 API
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 1. 抓取版本号
-          SB_VER=$(curl -s https://api.github.com/repos/cagedbird043/sing-box-auto-build-ci/releases | jq -r 'map(select(.tag_name | contains("alpha") | not)) | .[0].tag_name')
+          echo "🔍 Fetching latest sing-box version..."
 
-          # 2. 获取 android-arm64 下载地址
-          DOWNLOAD_URL=$(curl -s https://api.github.com/repos/cagedbird043/sing-box-auto-build-ci/releases/tags/$SB_VER | jq -r '.assets[] | select(.name | contains("android-arm64")) | .browser_download_url')
+          # 1. 抓取版本号 (带 Token)
+          # 注意：这里加了 -H Authorization
+          SB_VER=$(curl -s -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/cagedbird043/sing-box-auto-build-ci/releases | jq -r 'map(select(.tag_name | contains("alpha") | not)) | .[0].tag_name')
 
-          echo "Downloading from: $DOWNLOAD_URL"
-          curl -L -o sb.tar.gz "$DOWNLOAD_URL"
-
-          # 3. 鲁棒解压逻辑：原地解压，然后全量搜索
-          mkdir -p temp_sb
-          tar -xzf sb.tar.gz -C temp_sb
-
-          # 寻找名为 sing-box 的文件并移动到目标位置
-          # 这里的 find 会无视它是直接在根目录还是在 bin 子目录
-          find temp_sb -type f -name "sing-box" -exec mv {} bin/sing-box \;
-
-          # 兜底：如果文件名带后缀（如 sing-box-android-arm64），也给它重命名过来
-          if [ ! -f bin/sing-box ]; then
-            find temp_sb -type f -name "sing-box*" ! -name "*.tar.gz" -exec mv {} bin/sing-box \;
+          # 增加空值检测，防止报错也不知情
+          if [ -z "$SB_VER" ] || [ "$SB_VER" == "null" ]; then
+            echo "❌ Error: Failed to fetch version tag. API limit exceeded or repo not found."
+            exit 1
           fi
 
-          chmod +x bin/sing-box
+          echo "✅ Detected version: $SB_VER"
+
+          # 2. 获取下载地址 (带 Token)
+          DOWNLOAD_URL=$(curl -s -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/cagedbird043/sing-box-auto-build-ci/releases/tags/$SB_VER | jq -r '.assets[] | select(.name | contains("android-arm64")) | .browser_download_url')
+
+          if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" == "null" ]; then
+             echo "❌ Error: Could not find android-arm64 asset."
+             exit 1
+          fi
+
+          echo "⬇️ Downloading from: $DOWNLOAD_URL"
+          curl -L -o sb.tar.gz "$DOWNLOAD_URL"
+
+          # 3. 鲁棒解压逻辑
+          mkdir -p temp_sb
+          tar -xzf sb.tar.gz -C temp_sb/
+
+          # 地毯式搜索
+          TARGET_BIN=$(find temp_sb -type f -name "sing-box" | head -n 1)
+          if [ -z "$TARGET_BIN" ]; then
+              TARGET_BIN=$(find temp_sb -type f -name "sing-box*" ! -name "*.tar.gz" | head -n 1)
+          fi
+
+          if [ -n "$TARGET_BIN" ]; then
+              mv "$TARGET_BIN" bin/sing-box
+              chmod +x bin/sing-box
+              echo "✅ Sing-box core successfully installed."
+          else
+              echo "❌ Error: Binary not found in archive."
+              exit 1
+          fi
+
           rm -rf temp_sb sb.tar.gz
 
       - name: Fetch Default Config (Mobile)
