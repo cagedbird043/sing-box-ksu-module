@@ -4,7 +4,14 @@ on:
   push:
     branches: ["main"]
     paths:
-      ["bin/**", "service.sh", "customize.sh", "module.prop", "release.yml"]
+      [
+        "bin/**",
+        "service.sh",
+        "customize.sh",
+        "module.prop",
+        "release.yml",
+        "CHANGELOG.md",
+      ]
 
 jobs:
   build:
@@ -42,6 +49,18 @@ jobs:
           chmod +x bin/sing-box
           rm -rf temp_sb sb.tar.gz
 
+      - name: Fetch Default Config (Mobile)
+        run: |
+          echo "📥 Grabbing latest mobile config from EdgeOne..."
+          # 强制带时间戳穿透缓存，确保打进包里的是最新版
+          curl -fL -o config.template.json "https://miceworld.top/sing-box-config-templates/mobile/config.template.json?t=$(date +%s)"
+
+          # 简单校验一下，防止下歪了
+          if ! grep -q "inbounds" config.template.json; then
+            echo "❌ Error: Downloaded config is invalid!"
+            exit 1
+          fi
+
       - name: Prepare Module Metadata
         run: |
           BASE_VER=$(grep -m 1 "^## " CHANGELOG.md | sed 's/## //')
@@ -54,7 +73,7 @@ jobs:
       - name: Pack and Release
         run: |
           ZIP_NAME="sing-box-ksu-module-${{ env.VERSION }}.zip"
-          zip -ry "$ZIP_NAME" bin system customize.sh service.sh module.prop LICENSE CHANGELOG.md README.md .env.example
+          zip -ry "$ZIP_NAME" bin system customize.sh service.sh module.prop LICENSE CHANGELOG.md README.md .env.example config.template.json
           echo "ZIP_PATH=$ZIP_NAME" >> $GITHUB_ENV
 
       - name: Publish to GitHub Releases
@@ -66,7 +85,15 @@ jobs:
 
       - name: Update OTA Metadata
         run: |
+          # 1. 更新 update.json
           jq ".version = \"${{ env.VERSION }}\" | .versionCode = $(date +%Y%m%d%H) | .zipUrl = \"https://github.com/${{ github.repository }}/releases/latest/download/${{ env.ZIP_PATH }}\"" update.json > tmp.json && mv tmp.json update.json
+
+          # 2. 配置 Git 身份
           git config --global user.name "github-actions[bot]"
           git config --global user.email "actions@github.com"
-          git add update.json && git commit -m "chore: release ${{ env.VERSION }} [skip ci]" && git push
+
+          # 3. 把 module.prop 也加进去！
+          git add update.json module.prop
+
+          # 4. 智能提交：只有检测到变动才 commit，防止报错
+          git diff-index --quiet HEAD || (git commit -m "chore: release ${{ env.VERSION }} [skip ci]" && git push)
