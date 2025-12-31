@@ -8,6 +8,7 @@ on:
         "bin/**",
         "service.sh",
         "customize.sh",
+        "uninstall.sh",
         "module.prop",
         ".github/workflows/release.yml",
         "CHANGELOG.md",
@@ -86,7 +87,7 @@ jobs:
         run: |
           ZIP_NAME="sing-box-ksu-module-${{ env.VERSION }}.zip"
           # 只打包核心文件，排除文本文档和示例配置（云端管理）
-          zip -ry "$ZIP_NAME" bin/ system/ customize.sh service.sh module.prop README.md
+          zip -ry "$ZIP_NAME" bin/ system/ customize.sh uninstall.sh service.sh module.prop README.md
           echo "ZIP_PATH=$ZIP_NAME" >> $GITHUB_ENV
 
       - name: Publish to GitHub Releases
