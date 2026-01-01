@@ -1,18 +1,18 @@
 # Sing-box for KernelSU
 
-[![CI Build](https://github.com/cagedbird043/sing-box-ksu-module/actions/workflows/release.yml/badge.svg)](https://github.com/cagedbird043/sing-box-ksu-module/actions)
+[![CI Build](https://github.com/Mice-Tailor-Infra/sing-box-ksu-module/actions/workflows/release.yml/badge.svg)](https://github.com/Mice-Tailor-Infra/sing-box-ksu-module/actions)
 
 为 Android 设备深度定制的高性能 Sing-box 运行时环境，支持 KernelSU 模块化部署。
 
 ## 🎖️ 核心特性
 
-| 特性 | 说明 |
-|------|------|
-| **云端配置同步** | 安装时自动从 CDN 拉取最新配置模板，始终保持最新状态 |
+| 特性             | 说明                                                                       |
+| ---------------- | -------------------------------------------------------------------------- |
+| **云端配置同步** | 安装时自动从 CDN 拉取最新配置模板，始终保持最新状态                        |
 | **二进制归一化** | 所有二进制集中存放在 `/data/adb/sing-box-workspace/bin/`，模块目录极致轻量 |
-| **系统级软链** | 通过 `$MODPATH/system/bin/` 建立软链接，`sbc` 命令全局可用 |
-| **热更新** | `sbc update` 指令支持 OTA 增量更新，无需重启手机 |
-| **凭证隔离** | `.env` 文件与配置模板分离，保护隐私不外泄 |
+| **系统级软链**   | 通过 `$MODPATH/system/bin/` 建立软链接，`sbc` 命令全局可用                 |
+| **热更新**       | `sbc update` 指令支持 OTA 增量更新，无需重启手机                           |
+| **凭证隔离**     | `.env` 文件与配置模板分离，保护隐私不外泄                                  |
 
 ## 🏗️ 架构设计
 
@@ -64,15 +64,15 @@ SUB_TYPE="auto"
 
 ### 3. 管理服务
 
-| 命令 | 说明 |
-|------|------|
-| `sbc start` | 启动 sing-box 服务 |
-| `sbc stop` | 停止服务（优雅终止） |
-| `sbc restart` | 重启服务 |
-| `sbc status` | 查看运行状态 |
-| `sbc update` | 从云端拉取最新配置 |
-| `sbc logs` | 查看实时日志 |
-| `sbc edit` | 编辑 .env 凭证 |
+| 命令          | 说明                 |
+| ------------- | -------------------- |
+| `sbc start`   | 启动 sing-box 服务   |
+| `sbc stop`    | 停止服务（优雅终止） |
+| `sbc restart` | 重启服务             |
+| `sbc status`  | 查看运行状态         |
+| `sbc update`  | 从云端拉取最新配置   |
+| `sbc logs`    | 查看实时日志         |
+| `sbc edit`    | 编辑 .env 凭证       |
 
 ## 📦 模块结构
 
@@ -127,11 +127,11 @@ tail -n 100 /data/adb/sing-box-workspace/var/log/sing-box.log
 
 ## 🏭 组件依赖
 
-| 组件 | 仓库 | 用途 |
-|------|------|------|
-| 自动构建 CI | [sing-box-auto-build-ci](https://github.com/cagedbird043/sing-box-auto-build-ci) | 多平台/架构自动构建流水线 |
-| 配置模板 | [sing-box-config-templates](https://github.com/cagedbird043/sing-box-config-templates) | 移动端分流规则模板 |
-| CDN 加速 | [miceworld.top](https://miceworld.top) | 全球加速分发 |
+| 组件        | 仓库                                                                                        | 用途                      |
+| ----------- | ------------------------------------------------------------------------------------------- | ------------------------- |
+| 自动构建 CI | [sing-box-auto-build-ci](https://github.com/Mice-Tailor-Infra/sing-box-auto-build-ci)       | 多平台/架构自动构建流水线 |
+| 配置模板    | [sing-box-config-templates](https://github.com/Mice-Tailor-Infra/sing-box-config-templates) | 移动端分流规则模板        |
+| CDN 加速    | [miceworld.top](https://miceworld.top)                                                      | 全球加速分发              |
 
 ## 📄 许可证
 
