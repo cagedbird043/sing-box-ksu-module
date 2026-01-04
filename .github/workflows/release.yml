@@ -32,7 +32,7 @@ jobs:
 
           # 1. 抓取版本号 (带 Token)
           # 注意：这里加了 -H Authorization
-          SB_VER=$(curl -s -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/cagedbird043/sing-box-auto-build-ci/releases | jq -r 'map(select(.tag_name | contains("alpha") | not)) | .[0].tag_name')
+          SB_VER=$(curl -s -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/Mice-Tailor-Infra/sing-box-auto-build-ci/releases | jq -r 'map(select(.tag_name | contains("alpha") | not)) | .[0].tag_name')
 
           # 增加空值检测，防止报错也不知情
           if [ -z "$SB_VER" ] || [ "$SB_VER" == "null" ]; then
@@ -43,7 +43,7 @@ jobs:
           echo "✅ Detected version: $SB_VER"
 
           # 2. 获取下载地址 (带 Token)
-          DOWNLOAD_URL=$(curl -s -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/cagedbird043/sing-box-auto-build-ci/releases/tags/$SB_VER | jq -r '.assets[] | select(.name | contains("android-arm64")) | .browser_download_url')
+          DOWNLOAD_URL=$(curl -s -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/Mice-Tailor-Infra/sing-box-auto-build-ci/releases/tags/$SB_VER | jq -r '.assets[] | select(.name | contains("android-arm64")) | .browser_download_url')
 
           if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" == "null" ]; then
              echo "❌ Error: Could not find android-arm64 asset."
