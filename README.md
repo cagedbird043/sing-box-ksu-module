@@ -13,6 +13,7 @@
 | **系统级软链**   | 通过 `$MODPATH/system/bin/` 建立软链接，`sbc` 命令全局可用                 |
 | **热更新**       | `sbc update` 指令支持 OTA 增量更新，无需重启手机                           |
 | **凭证隔离**     | `.env` 文件与配置模板分离，保护隐私不外泄                                  |
+| **配置覆写**     | 支持 Top/Mid/Bottom 多位注入与 JSON 自动清洗，实现零语法负担定制           |
 
 ## 🏗️ 架构设计
 
@@ -123,6 +124,16 @@ SUB_URL_3="https://backup2.com/subscribe/zzzzzz"
 # 自定义 0.0.0.0 Mixed 代理服务器账号密码
 MIXED_PROXY_USERNAME="your_username"
 MIXED_PROXY_PASSWORD="your_password"
+
+# --- 高级配置覆写 (Override) ---
+# [💡 特性]：支持 Top/Mid/Bottom 多位注入与 JSON 自动清洗 (Zero-Comma)。
+# 无需写末尾逗号，系统自动修复语法。
+
+# 路由规则 (ROUTE_RULES_TOP / _MID / _BOTTOM)
+# ROUTE_RULES_TOP='{"domain": ["fast.com"], "outbound": "direct"}'
+
+# DNS 规则 (DNS_RULES_TOP / _MID / _BOTTOM)
+# DNS_RULES_TOP='{"domain": ["internal.corp"], "server": "local"}'
 ```
 
 ### 日志查看
