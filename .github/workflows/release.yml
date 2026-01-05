@@ -77,6 +77,8 @@ jobs:
       - name: Prepare Module Metadata
         run: |
           BASE_VER=$(grep -m 1 "^## " CHANGELOG.md | sed 's/## //')
+          # 提取最新版本的 Release Notes (从第一个 ## 到第二个 ## 之前)
+          sed -n '/^## /,/^## /p' CHANGELOG.md | sed '$d' > release_notes.md
           # 版本号只保留基础版，不带 cfg 碎屑
           V_CODE=$(date +%Y%m%d%H)
           sed -i "s/\${DISPLAY_VER}/$BASE_VER/" module.prop
@@ -97,7 +99,8 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
           files: ${{ env.ZIP_PATH }}
-          generate_release_notes: true
+          body_path: release_notes.md
+          generate_release_notes: false
 
       - name: Update OTA Metadata
         run: |
