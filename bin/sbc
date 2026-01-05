@@ -69,6 +69,13 @@ case "$1" in
                 if [ -f "$ENV_FILE" ]; then
                     set -a; . "$ENV_FILE"; set +a
                     "$WORKSPACE/bin/envsubst" < "$TEMPLATE" > "$CONFFILE"
+
+                    # === JSON 语法清洗 (针对配置覆写占位符) ===
+                    # 处理因占位符为空导致的非法逗号: [ , -> [ | , ] -> ] | , , -> ,
+                    sed -i 's/\[\s*,/\[/g' "$CONFFILE"
+                    sed -i 's/,\s*\]/\]/g' "$CONFFILE"
+                    sed -i 's/,\s*,/,/g' "$CONFFILE"
+
                     echo "🚀 渲染完成，执行热重载 (Hot Reload)..."
                     $0 restart
                 else
