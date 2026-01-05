@@ -71,7 +71,10 @@ case "$1" in
                     "$WORKSPACE/bin/envsubst" < "$TEMPLATE" > "$CONFFILE"
 
                     # === JSON 语法清洗 (针对配置覆写占位符) ===
-                    # 处理因占位符为空导致的非法逗号: [ , -> [ | , ] -> ] | , , -> ,
+                    # 处理因占位符为空导致的非法逗号 (跨行处理)
+                    # 1. 将行首为逗号的行与上一行合并
+                    sed -i ':a;N;$!ba;s/\n\s*,/,/g' "$CONFFILE"
+                    # 2. 清理常见非法组合: [ , -> [ | , ] -> ] | , , -> ,
                     sed -i 's/\[\s*,/\[/g' "$CONFFILE"
                     sed -i 's/,\s*\]/\]/g' "$CONFFILE"
                     sed -i 's/,\s*,/,/g' "$CONFFILE"
