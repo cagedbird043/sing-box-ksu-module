@@ -114,5 +114,7 @@ jobs:
           # 3. 只提交 update.json，不要提交 module.prop (保持占位符)
           git add update.json
 
-          # 4. 智能提交：只有检测到变动才 commit，防止报错
-          git diff-index --quiet HEAD || (git commit -m "chore: release ${{ env.VERSION }} [skip ci]" && git push)
+          # 4. 只在 update.json 真正变化时才提交，防止在只更改 README 或 CI 逻辑时产生空的 chore commit
+          # 使用 -- update.json 限制 diff 范围，并清理中间产物
+          rm -f release_notes.md
+          git diff-index --quiet HEAD update.json || (git commit -m "chore: release ${{ env.VERSION }} [skip ci]" && git push)
