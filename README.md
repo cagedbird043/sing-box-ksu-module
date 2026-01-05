@@ -50,17 +50,11 @@ sing-box-ksu-module/
 
 ### 2. 配置订阅
 
-```bash
-# 编辑凭证文件
-sbc edit
-
-# 或手动编辑
-vi /data/adb/sing-box-workspace/.env
-
-# 示例配置
-SUB_URL_1="https://your-subscription-url.com"
-SUB_TYPE="auto"
-```
+1. 编辑凭证文件：
+   ```bash
+   sbc edit
+   ```
+2. 参考 [环境变量](#环境变量) 章节填入您的订阅链接及相关密钥。
 
 ### 3. 管理服务
 
@@ -104,15 +98,31 @@ sing-box-ksu-module-v1.12.14-r21.zip
 编辑 `$WORKSPACE/.env`：
 
 ```bash
-# 订阅配置
-SUB_URL_1="https://example.com/sub"
-SUB_URL_2=""                    # 支持多订阅，留空则跳过
+# Sing-box 运行时环境变量模板
+# 请将此文件复制为 .env 并填入真实信息
 
-# 解析类型 (auto, json, base64, sip008)
-SUB_TYPE="auto"
+# --- 核心安全密钥 ---
+# Clash API 的访问密钥 (用于 Dashboard 管理)
+CLASH_API_SECRET="ChangeMe123456"
 
-# 自定义变量（可在配置模板中使用）
-CUSTOM_VAR_1=""
+# --- 订阅源链接 ---
+# 建议配置三个不同的机场以实现高可用负载均衡
+
+# 主力机场
+PROVIDER_NAME_1="机场A_主用"
+SUB_URL_1="https://example.com/api/v1/client/subscribe?token=xxxxxx"
+
+# 备用机场 A
+PROVIDER_NAME_2="机场B_备用"
+SUB_URL_2="https://backup1.com/link/yyyyyy"
+
+# 备用机场 B
+PROVIDER_NAME_3="机场C_保底"
+SUB_URL_3="https://backup2.com/subscribe/zzzzzz"
+
+# 自定义 0.0.0.0 Mixed 代理服务器账号密码
+MIXED_PROXY_USERNAME="your_username"
+MIXED_PROXY_PASSWORD="your_password"
 ```
 
 ### 日志查看
